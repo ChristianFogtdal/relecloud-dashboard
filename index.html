@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Relecloud | Event Dashboard</title>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.3.1",
+          "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+          "react-dom": "https://esm.sh/react-dom@18.3.1",
+          "react-dom/client": "https://esm.sh/react-dom@18.3.1/client"
+        }
+      }
+    </script>
+
+    <style>
+      body {
+        margin: 0;
+        color: #172b4d;
+        font-family: "Segoe UI", sans-serif;
+        background: #f5f7fb;
+      }
+
+      #app {
+        box-sizing: border-box;
+        display: grid;
+        grid-template-columns: 232px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        padding: 28px 16px;
+        color: #eaf0ff;
+        background: #172b4d;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 8px;
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 6px;
+        background: #2864dc;
+        font-size: 14px;
+      }
+
+      .nav-list {
+        display: grid;
+        gap: 4px;
+      }
+
+      .nav-item {
+        width: 100%;
+        justify-content: flex-start;
+        color: #c7d2e9;
+      }
+
+      .nav-item.active {
+        color: white;
+        background: #2b4a77;
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        padding: 16px 8px 0;
+        border-top: 1px solid #365276;
+        color: #c7d2e9;
+        font-size: 13px;
+      }
+
+      .content {
+        min-width: 0;
+        padding: 32px;
+      }
+
+      .topbar,
+      .page-title-row,
+      .section-heading,
+      .event-meta,
+      .activity-item {
+        display: flex;
+        align-items: center;
+      }
+
+      .topbar {
+        justify-content: flex-end;
+        gap: 12px;
+        margin-bottom: 36px;
+      }
+
+      .user-name {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .page-title-row {
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 28px;
+      }
+
+      .eyebrow {
+        margin: 0;
+        color: #52647f;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 4px 0 0;
+        font-size: 32px;
+        line-height: 1.15;
+      }
+
+      .intro {
+        margin: 8px 0 0;
+        color: #52647f;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .kpi-card,
+      .panel {
+        border: 1px solid #e2e8f2;
+        box-shadow: 0 1px 2px rgb(23 43 77 / 5%);
+      }
+
+      .kpi-card {
+        padding: 18px;
+      }
+
+      .kpi-label,
+      .panel-subtitle,
+      .event-meta,
+      .activity-time {
+        color: #64748b;
+        font-size: 13px;
+      }
+
+      .kpi-value {
+        display: block;
+        margin: 8px 0;
+        font-size: 29px;
+        font-weight: 700;
+      }
+
+      .kpi-note {
+        color: #16704b;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .panel {
+        padding: 20px;
+      }
+
+      .section-heading {
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 4px;
+      }
+
+      .section-heading h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .panel-subtitle {
+        margin: 0 0 18px;
+      }
+
+      .trend-chart {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        align-items: end;
+        gap: 12px;
+        height: 184px;
+        padding: 12px 0 0;
+        border-bottom: 1px solid #d9e2f0;
+      }
+
+      .chart-day {
+        display: grid;
+        grid-template-rows: 1fr auto;
+        height: 100%;
+        gap: 8px;
+        text-align: center;
+        color: #64748b;
+        font-size: 12px;
+      }
+
+      .bar-wrap {
+        display: flex;
+        align-items: end;
+        justify-content: center;
+        height: 100%;
+      }
+
+      .bar {
+        width: min(32px, 100%);
+        border-radius: 4px 4px 0 0;
+        background: #2864dc;
+      }
+
+      .events-panel {
+        margin-top: 16px;
+      }
+
+      .event-list,
+      .activity-list {
+        display: grid;
+        gap: 2px;
+      }
+
+      .event-row {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf1f7;
+      }
+
+      .event-row:last-child {
+        border-bottom: 0;
+      }
+
+      .event-date {
+        padding: 6px 3px;
+        border-radius: 4px;
+        color: #2864dc;
+        background: #e8f0ff;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .event-name {
+        margin: 0 0 4px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .event-meta {
+        gap: 4px;
+      }
+
+      .activity-item {
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf1f7;
+      }
+
+      .activity-item:last-child {
+        border-bottom: 0;
+      }
+
+      .activity-dot {
+        width: 9px;
+        height: 9px;
+        margin-top: 5px;
+        border-radius: 50%;
+        background: #7a51c7;
+      }
+
+      .activity-copy {
+        flex: 1;
+        margin: 0;
+        color: #334155;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+      .search-input { flex: 1; max-width: 360px; }
+      .table-wrap { overflow-x: auto; }
+      .data-table { width: 100%; border-collapse: collapse; color: #334155; font-size: 14px; text-align: left; }
+      .data-table th { padding: 0 12px 10px; color: #64748b; font-size: 12px; text-transform: uppercase; }
+      .data-table td { padding: 14px 12px; border-top: 1px solid #edf1f7; }
+      .data-table th:first-child, .data-table td:first-child { padding-left: 0; }
+      .data-table th:last-child, .data-table td:last-child { padding-right: 0; }
+      .table-title { display: block; color: #172b4d; font-weight: 700; }
+      .table-detail { display: block; margin-top: 3px; color: #64748b; font-size: 12px; }
+      .event-catalogue { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+      .catalogue-card { display: grid; gap: 14px; padding: 18px; }
+      .event-banner { height: 72px; border-radius: 5px; background: linear-gradient(135deg, #dce9ff, #d9f4ee); }
+      .catalogue-card:nth-child(2) .event-banner { background: linear-gradient(135deg, #eee4ff, #f8e3f0); }
+      .catalogue-card:nth-child(3) .event-banner { background: linear-gradient(135deg, #ffe9c6, #fde5db); }
+      .catalogue-card h2 { margin: 0; font-size: 17px; }
+      .catalogue-footer { display: flex; justify-content: space-between; gap: 8px; color: #64748b; font-size: 13px; }
+      .analytics-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, 1fr); gap: 16px; margin-top: 24px; }
+      .line-chart { height: 182px; border-bottom: 1px solid #d9e2f0; background: repeating-linear-gradient(to bottom, transparent 0, transparent 44px, #edf1f7 45px); }
+      .line-chart svg { width: 100%; height: 100%; overflow: visible; }
+      .line-labels { display: flex; justify-content: space-between; margin-top: 8px; color: #64748b; font-size: 12px; }
+      .breakdown-list { display: grid; gap: 15px; }
+      .breakdown-row { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 14px; }
+      .progress-track { grid-column: 1 / -1; height: 7px; overflow: hidden; border-radius: 5px; background: #e9eef6; }
+      .progress-bar { height: 100%; border-radius: inherit; background: #7a51c7; }
+
+      @media (max-width: 760px) {
+        #app {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          gap: 14px;
+          padding: 18px 12px;
+        }
+
+        .nav-list {
+          grid-template-columns: repeat(5, 1fr);
+        }
+
+        .nav-item {
+          justify-content: center;
+          min-width: 0;
+          padding: 6px;
+          font-size: 0;
+        }
+
+        .nav-item span {
+          margin: 0;
+        }
+
+        .sidebar-footer {
+          display: none;
+        }
+
+        .content {
+          padding: 24px 16px;
+        }
+
+        .topbar {
+          margin-bottom: 26px;
+        }
+
+        .page-title-row {
+          display: grid;
+        }
+
+        .kpi-grid,
+        .dashboard-grid,
+        .analytics-grid,
+        .event-catalogue {
+          grid-template-columns: 1fr;
+        }
+
+        .toolbar { flex-wrap: wrap; }
+        .search-input { flex-basis: 100%; max-width: none; }
+
+        .event-row {
+          grid-template-columns: 42px minmax(0, 1fr);
+        }
+
+        .event-row > :last-child {
+          grid-column: 2;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="module">
+      import * as React from "react";
+      import { createRoot } from "react-dom/client";
+      import htm from "https://esm.sh/htm@3.1.1";
+      import {
+        Button,
+        Card,
+        Dropdown,
+        FluentProvider,
+        Input,
+        Option,
+        Text,
+        webLightTheme
+      } from "https://esm.sh/@fluentui/react-components@9.57.0?external=react,react-dom,react-dom/client";
+      import {
+        AddRegular,
+        CalendarMonthRegular,
+        ChartMultipleRegular,
+        GridRegular,
+        PeopleRegular,
+        PersonRegular,
+        SettingsRegular
+      } from "https://esm.sh/@fluentui/react-icons@2.0.265?external=react";
+
+      const html = htm.bind(React.createElement);
+
+      const navigation = [
+        { label: "Dashboard", icon: GridRegular },
+        { label: "Events", icon: CalendarMonthRegular },
+        { label: "Registrations", icon: PeopleRegular },
+        { label: "Analytics", icon: ChartMultipleRegular },
+        { label: "Settings", icon: SettingsRegular }
+      ];
+
+      const metrics = [
+        { label: "Total events", value: "24", note: "+3 this month" },
+        { label: "Active registrations", value: "1,284", note: "+12.4% this week" },
+        { label: "Attendance rate", value: "87.6%", note: "+4.1% from last event" },
+        { label: "Revenue", value: "$86,420", note: "+8.2% this month" }
+      ];
+
+      const trend = [42, 58, 47, 74, 68, 91, 86];
+
+      const events = [
+        { date: "12\nSEP", name: "Future of Work Summit", meta: "Seattle Convention Center", status: "458 registered" },
+        { date: "18\nSEP", name: "Product Makers Meetup", meta: "Relecloud Campus", status: "126 registered" },
+        { date: "03\nOCT", name: "Cloud Innovation Forum", meta: "Online event", status: "700 registered" }
+      ];
+
+      const activity = [
+        { text: "Maya Chen registered for Future of Work Summit.", time: "6 min" },
+        { text: "Product Makers Meetup reached 75% capacity.", time: "28 min" },
+        { text: "Jordan Lee exported the August registration report.", time: "1 hr" },
+        { text: "Cloud Innovation Forum was updated by Alex Morgan.", time: "3 hr" }
+      ];
+
+      const catalogueEvents = [
+        { name: "Future of Work Summit", format: "In person", date: "12 Sep 2026", registrations: "458 / 600", state: "Published" },
+        { name: "Product Makers Meetup", format: "In person", date: "18 Sep 2026", registrations: "126 / 180", state: "Published" },
+        { name: "Cloud Innovation Forum", format: "Online", date: "03 Oct 2026", registrations: "700 / 1,000", state: "Draft" }
+      ];
+
+      const registrations = [
+        { name: "Maya Chen", email: "maya.chen@example.com", event: "Future of Work Summit", date: "Today, 09:42", status: "Approved" },
+        { name: "Jordan Lee", email: "jordan.lee@example.com", event: "Cloud Innovation Forum", date: "Today, 08:17", status: "Pending" },
+        { name: "Amara Patel", email: "amara.patel@example.com", event: "Product Makers Meetup", date: "Yesterday", status: "Approved" },
+        { name: "Theo Morgan", email: "theo.morgan@example.com", event: "Future of Work Summit", date: "Yesterday", status: "Approved" }
+      ];
+
+      function PageHeader({ title, detail, action }) {
+        return html`<div className="page-title-row"><div><p className="eyebrow">Event management</p><h1>${title}</h1><p className="intro">${detail}</p></div>${action}</div>`;
+      }
+
+      function EventsPage() {
+        const [query, setQuery] = React.useState("");
+        const visibleEvents = catalogueEvents.filter((event) => event.name.toLowerCase().includes(query.toLowerCase()));
+        return html`<${PageHeader} title="Events" detail="Create, publish, and monitor every event in your programme." action=${html`<${Button} appearance="primary" icon=${html`<${AddRegular} />`}>Create event</${Button}>`} />
+          <div className="toolbar"><${Input} className="search-input" value=${query} onChange=${(_, data) => setQuery(data.value)} placeholder="Search events" aria-label="Search events" /><${Dropdown} defaultValue="All statuses" aria-label="Filter event status"><${Option}>All statuses</${Option}><${Option}>Published</${Option}><${Option}>Draft</${Option}></${Dropdown}></div>
+          <section className="event-catalogue" aria-label="Event catalogue">${visibleEvents.map((event) => html`<${Card} className="catalogue-card" key=${event.name}><div className="event-banner"></div><div><h2>${event.name}</h2><p className="panel-subtitle">${event.date} · ${event.format}</p></div><div className="catalogue-footer"><span>${event.registrations}</span><${Text} weight="semibold" size=${200}>${event.state}</${Text}></div><${Button} appearance="subtle">Manage event</${Button}></${Card}>`)}</section>`;
+      }
+
+      function RegistrationsPage() {
+        const [query, setQuery] = React.useState("");
+        const visibleRegistrations = registrations.filter((registration) => (registration.name + registration.email + registration.event).toLowerCase().includes(query.toLowerCase()));
+        return html`<${PageHeader} title="Registrations" detail="Review attendee activity and keep every event list accurate." action=${html`<${Button} appearance="primary">Export registrations</${Button}>`} />
+          <${Card} className="panel"><div className="toolbar"><${Input} className="search-input" value=${query} onChange=${(_, data) => setQuery(data.value)} placeholder="Search attendees" aria-label="Search attendees" /><${Dropdown} defaultValue="All events" aria-label="Filter registrations"><${Option}>All events</${Option}><${Option}>Future of Work Summit</${Option}><${Option}>Product Makers Meetup</${Option}></${Dropdown}></div><div className="table-wrap"><table className="data-table"><thead><tr><th>Attendee</th><th>Event</th><th>Registered</th><th>Status</th><th></th></tr></thead><tbody>${visibleRegistrations.map((registration) => html`<tr key=${registration.email}><td><span className="table-title">${registration.name}</span><span className="table-detail">${registration.email}</span></td><td>${registration.event}</td><td>${registration.date}</td><td><${Text} weight="semibold" size=${200}>${registration.status}</${Text}></td><td><${Button} appearance="subtle" size="small">Review</${Button}></td></tr>`)}</tbody></table></div></${Card}>`;
+      }
+
+      function AnalyticsPage() {
+        const sources = [{ label: "Direct registration", value: "46%", width: "46%" }, { label: "Partner campaigns", value: "29%", width: "29%" }, { label: "Email invitations", value: "17%", width: "17%" }, { label: "Social channels", value: "8%", width: "8%" }];
+        return html`<${PageHeader} title="Analytics" detail="Measure registration momentum, event health, and revenue performance." action=${html`<${Button} appearance="primary">Export report</${Button}>`} />
+          <section className="kpi-grid" aria-label="Analytics metrics"><${Card} className="kpi-card"><span className="kpi-label">Registration conversion</span><strong className="kpi-value">31.8%</strong><span className="kpi-note">+5.6% this month</span></${Card}><${Card} className="kpi-card"><span className="kpi-label">Average attendance</span><strong className="kpi-value">87.6%</strong><span className="kpi-note">+4.1% from last event</span></${Card}><${Card} className="kpi-card"><span className="kpi-label">Revenue per attendee</span><strong className="kpi-value">$67.31</strong><span className="kpi-note">+2.8% this month</span></${Card}><${Card} className="kpi-card"><span className="kpi-label">Net promoter score</span><strong className="kpi-value">62</strong><span className="kpi-note">+7 points this quarter</span></${Card}></section>
+          <section className="analytics-grid"><${Card} className="panel"><div className="section-heading"><h2>Registration performance</h2><${Button} appearance="subtle" size="small">Last 30 days</${Button}></div><p className="panel-subtitle">Completed registrations across all events</p><div className="line-chart" aria-label="Thirty-day registration line chart"><svg viewBox="0 0 600 180" role="img"><polyline fill="none" stroke="#2864dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="0,150 70,126 130,139 195,96 260,110 330,58 400,77 470,45 535,62 600,18"></polyline></svg></div><div className="line-labels"><span>Aug 11</span><span>Aug 18</span><span>Aug 25</span><span>Sep 09</span></div></${Card}><${Card} className="panel"><div className="section-heading"><h2>Registration sources</h2></div><p className="panel-subtitle">Where attendees discover events</p><div className="breakdown-list">${sources.map((source) => html`<div className="breakdown-row" key=${source.label}><span>${source.label}</span><strong>${source.value}</strong><div className="progress-track"><div className="progress-bar" style=${{ width: source.width }}></div></div></div>`)}</div></${Card}></section>`;
+      }
+
+      function App() {
+        const [activePage, setActivePage] = React.useState("Dashboard");
+
+        return html`
+          <${FluentProvider} theme=${webLightTheme}>
+            <main id="app">
+              <aside className="sidebar" aria-label="Main navigation">
+                <div className="brand"><span className="brand-mark">R</span> Relecloud</div>
+                <nav className="nav-list">
+                  ${navigation.map((item) => html`
+                    <${Button}
+                      className=${"nav-item " + (activePage === item.label ? "active" : "")}
+                      appearance="subtle"
+                      icon=${html`<${item.icon} />`}
+                      onClick=${() => setActivePage(item.label)}
+                      key=${item.label}
+                    >${item.label}</${Button}>
+                  `)}
+                </nav>
+                <div className="sidebar-footer">Organiser workspace<br />Northstar Events</div>
+              </aside>
+
+              <section className="content">
+                <header className="topbar">
+                  <span className="user-name">Alex Morgan</span>
+                  <${Button} appearance="subtle" icon=${html`<${PersonRegular} />`} aria-label="Open user menu" />
+                </header>
+
+                ${activePage === "Events" && html`<${EventsPage} />`}
+                ${activePage === "Registrations" && html`<${RegistrationsPage} />`}
+                ${activePage === "Analytics" && html`<${AnalyticsPage} />`}
+                ${(activePage === "Dashboard" || activePage === "Settings") && html`<div className="page-title-row">
+                  <div>
+                    <p className="eyebrow">${activePage === "Dashboard" ? "Tuesday, September 9" : "Event management"}</p>
+                    <h1>${activePage}</h1>
+                    <p className="intro">${activePage === "Dashboard" ? "A clear view of your event programme and audience." : "This workspace is ready for your " + activePage.toLowerCase() + " tools."}</p>
+                  </div>
+                  <${Button} appearance="primary" icon=${html`<${AddRegular} />`}>Create event</${Button}>
+                </div>
+
+                <section className="kpi-grid" aria-label="Event performance metrics">
+                  ${metrics.map((metric) => html`
+                    <${Card} className="kpi-card" key=${metric.label}>
+                      <span className="kpi-label">${metric.label}</span>
+                      <strong className="kpi-value">${metric.value}</strong>
+                      <span className="kpi-note">${metric.note}</span>
+                    </${Card}>
+                  `)}
+                </section>
+
+                <section className="dashboard-grid">
+                  <${Card} className="panel">
+                    <div className="section-heading"><h2>Registration trend</h2><${Button} appearance="subtle" size="small">Last 7 days</${Button}></div>
+                    <p className="panel-subtitle">New registrations across all live events</p>
+                    <div className="trend-chart" aria-label="Seven-day registration trend">
+                      ${trend.map((value, index) => html`<div className="chart-day" key=${index}><div className="bar-wrap"><div className="bar" style=${{ height: value + "%" }}></div></div><span>${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}</span></div>`)}
+                    </div>
+                  </${Card}>
+
+                  <${Card} className="panel">
+                    <div className="section-heading"><h2>Recent activity</h2><${Button} appearance="subtle" size="small">View all</${Button}></div>
+                    <div className="activity-list">
+                      ${activity.map((item) => html`<div className="activity-item" key=${item.text}><span className="activity-dot"></span><p className="activity-copy">${item.text}</p><span className="activity-time">${item.time}</span></div>`)}
+                    </div>
+                  </${Card}>
+                </section>
+
+                <${Card} className="panel events-panel">
+                  <div className="section-heading"><h2>Upcoming events</h2><${Button} appearance="subtle" size="small">View calendar</${Button}></div>
+                  <p className="panel-subtitle">Your next scheduled experiences</p>
+                  <div className="event-list">
+                    ${events.map((event) => html`<div className="event-row" key=${event.name}><div className="event-date">${event.date.split("\n").map((line) => html`<div>${line}</div>`)}</div><div><p className="event-name">${event.name}</p><span className="event-meta">${event.meta}</span></div><${Text} size=${200} weight="semibold">${event.status}</${Text}></div>`)}
+                  </div>
+                </${Card}>
+                `}
+              </section>
+            </main>
+          </${FluentProvider}>
+        `;
+      }
+
+      createRoot(document.getElementById("root")).render(html`<${App} />`);
+    </script>
+  </body>
+</html>
